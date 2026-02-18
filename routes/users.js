@@ -40,12 +40,46 @@ router.post('/inscription', (req, res) => {
               });
 
             } else {
-              res.json({ result: false, error: 'Utilisateur déja enregistré' });
+              res.json({ result: false, error: 'Utilisateur déjà enregistré' });
             }
           });
         } else {
       res.json({ result: false, error: 'Format email invalide' });
     }
   });
+
+  router.post('/connection', (req, res) => {
+  const newToken = uid2(32);
+
+  if (!checkBody(req.body, ['email', 'password'])) {
+    return res.json({ result: false, error: 'Missing or empty fields' });
+  }
+
+  User.findOne({ email: req.body.email })
+    .then(data => {
+      if (!data) {
+        return res.json({ result: false, error: 'Utilisateur introuvable' });
+      }
+
+      if (!bcrypt.compareSync(req.body.password, data.password)) {
+        return res.json({ result: false, error: 'Mot de passe invalide' });
+      }
+
+
+      return User.updateOne(
+        { _id: data._id },
+        { token: newToken }
+      ).then(() => {
+        return res.json({
+          result: true,
+          token: newToken,
+        });
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      return res.status(500).json({ result: false, error: 'Server error' });
+    });
+});
 
 module.exports = router;
