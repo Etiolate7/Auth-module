@@ -48,7 +48,7 @@ router.post('/inscription', (req, res) => {
     }
   });
 
-  router.post('/connection', (req, res) => {
+  router.post('/connexion', (req, res) => {
   const newToken = uid2(32);
 
   if (!checkBody(req.body, ['email', 'password'])) {
