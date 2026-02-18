@@ -45,7 +45,6 @@ router.post('/inscription', (req, res) => {
           });
         } else {
       res.json({ result: false, error: 'Format email invalide' });
-
     }
   });
 
