@@ -8,78 +8,62 @@ const { checkBody } = require('../modules/users');
 const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
 
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = process.env.JWT_SECRET
+
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
 
 
-router.post('/inscription', (req, res) => {
-  if (!checkBody(req.body, ['email', 'password'])) {
-    res.json({ result: false, error: 'Missing or empty fields' });
-    return;
-  }
-
-  const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-  if (EMAIL_REGEX.test(req.body.email)) {
-
-          User.findOne({ email: req.body.email }).then(data => {
-            if (data === null) {
-              const hash = bcrypt.hashSync(req.body.password, 10);
-              const newToken = uid2(32);
-              const newUser = new User({
-                token: newToken,
-                email: req.body.email,
-                password: hash,
-                created: new Date(),
-              });
-
-              newUser.save().then(data => {
-                res.json({ result: true, token: newToken });
-              });
-
-            } else {
-              res.json({ result: false, error: 'Utilisateur déjà enregistré' });
-            }
-          });
-        } else {
-      res.json({ result: false, error: 'Format email invalide' });
+router.post('/inscription', async (req, res) => {
+  try {
+    if (!checkBody(req.body, ['email', 'password'])) {
+      return res.json({ result: false, error: 'Missing or empty fields' });
     }
-  });
 
-  router.post('/connexion', (req, res) => {
-  const newToken = uid2(32);
+    const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    
+    if (!EMAIL_REGEX.test(req.body.email)) {
+      return res.json({ result: false, error: 'Format email invalide' });
+    }
 
-  if (!checkBody(req.body, ['email', 'password'])) {
-    return res.json({ result: false, error: 'Missing or empty fields' });
-  }
+    const existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) {
+      return res.json({ result: false, error: 'Email déjà utilisé' });
+    }
 
-  User.findOne({ email: req.body.email })
-    .then(data => {
-      if (!data) {
-        return res.json({ result: false, error: 'Utilisateur introuvable' });
-      }
-
-      if (!bcrypt.compareSync(req.body.password, data.password)) {
-        return res.json({ result: false, error: 'Mot de passe invalide' });
-      }
-
-
-      return User.updateOne(
-        { _id: data._id },
-        { token: newToken }
-      ).then(() => {
-        return res.json({
-          result: true,
-          token: newToken,
-        });
-      });
-    })
-    .catch(err => {
-      console.error(err);
-      return res.status(500).json({ result: false, error: 'Server error' });
+    const hash = bcrypt.hashSync(req.body.password, 10);
+    const refreshToken = uid2(32);
+    
+    const newUser = new User({
+      email: req.body.email,
+      password: hash,
+      token: refreshToken,
+      created: new Date(),
     });
+
+    await newUser.save();
+    
+    const accessToken = jwt.sign(
+      { userId: newUser._id },
+      SECRET_KEY,
+      { expiresIn: '15m' }
+    );
+
+    res.json({ 
+      result: true,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      expiresIn: 900,
+      message: 'Inscription et connexion réussies'
+    });
+
+  } catch (error) {
+    console.error('Erreur inscription:', error);
+    res.status(500).json({ result: false, error: 'Erreur serveur' });
+  }
 });
 
 module.exports = router;
