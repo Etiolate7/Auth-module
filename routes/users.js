@@ -10,6 +10,7 @@ const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = process.env.JWT_SECRET
+const authenticateJwt = require('../middleware/authorization');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -64,6 +65,28 @@ router.post('/inscription', async (req, res) => {
     console.error('Erreur inscription:', error);
     res.status(500).json({ result: false, error: 'Erreur serveur' });
   }
+});
+
+
+router.get('/profil', authenticateJwt, (req, res) => {
+  
+  User.findById(req.user.userId)
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({ 
+          result: false, 
+          error: 'Utilisateur introuvable' 
+        });
+      }
+      
+      res.json({
+        result: true,
+        user: { id: user._id, email: user.email }
+      });
+    })
+    .catch(err => {
+      res.status(500).json({ result: false, error: 'Erreur serveur' });
+    });
 });
 
 module.exports = router;
