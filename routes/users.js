@@ -76,6 +76,39 @@ router.post('/inscription', async (req, res) => {
 });
 
 
+router.post('/refresh', (req, res) => {
+  const { refreshToken } = req.body;
+  
+  User.findOne({ token: refreshToken })
+    .then(user => {
+      if (!user) {
+        return res.status(403).json({ 
+          result: false, 
+          error: 'Refresh token invalide' 
+        });
+      }
+      
+      const newAccessToken = jwt.sign(
+        { userId: user._id },
+        SECRET_KEY,
+        { expiresIn: '15m' }
+      );
+      
+      res.json({
+        result: true,
+        accessToken: newAccessToken,
+        expiresIn: 900
+      });
+    })
+    .catch(err => {
+      res.status(500).json({ 
+        result: false, 
+        error: 'Erreur serveur' 
+      });
+    });
+});
+
+
 router.get('/profil', authenticateJwt, (req, res) => {
 
   User.findById(req.user.userId)
