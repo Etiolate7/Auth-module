@@ -3,39 +3,39 @@ import { useState } from 'react';
 
 function Home() {
 
-    const [connectionEmail, setConnectionEmail] = useState('');
-    const [connectionPassword, setConnectionPassword] = useState('');
+  const [inscriptionEmail, setInscriptionEmail] = useState('');
+  const [inscriptionPassword, setInscriptionPassword] = useState('');
 
-    const [inscriptionEmail, setInscriptionEmail] = useState('');
-    const [inscriptionPassword, setInscriptionPassword] = useState('');
+  const [erreurInscription, setErreurInscription] = useState('');
 
-    const [erreurConnection, setErreurConnection] = useState('');
-    const [erreurInscription, setErreurInscription] = useState('');
-
-const SuivantConnection = () => {
-  console.log('yay!');
-}
-
-const SuivantInscription = () => {
-  console.log('whoho!!');
-}
-
+  const SuivantInscription = () => {
+    fetch('http://localhost:3000/users/inscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: inscriptionEmail, password: inscriptionPassword }),
+    }).then(response => response.json())
+      .then(data => {
+        if (data.result) {
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            window.location.href = '/main';
+        } else {
+          console.log(data.error)
+          setErreurInscription(data.error)
+        }
+      });
+  }
 
   return (
     <div>
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Connection
+          Inscription/Connexion
         </h1>
-        <input onChange={(value) => setConnectionEmail(value)} value={connectionEmail} placeholder="Email"></input>
-        <input onChange={(value) => setConnectionPassword(value)} value={connectionPassword} placeholder="Mot de passe"></input>
-        <button onClick={SuivantConnection}>Se connecter</button>
-        <h1 className={styles.title}>
-            Inscription
-        </h1>
-        <input onChange={(value) => setInscriptionEmail(value)} value={inscriptionEmail} placeholder="Email"></input>
-        <input onChange={(value) => setInscriptionPassword(value)} value={inscriptionPassword} placeholder="Mot de passe"></input>
-        <button onClick={SuivantInscription}>S'inscrire</button>
+        <text>{erreurInscription}</text>
+        <input onChange={(e) => setInscriptionEmail(e.target.value)} value={inscriptionEmail} placeholder="Email"></input>
+        <input onChange={(e) => setInscriptionPassword(e.target.value)} value={inscriptionPassword} placeholder="Mot de passe"></input>
+        <button onClick={SuivantInscription}>Entrer</button>
       </main>
     </div>
   );
