@@ -13,7 +13,7 @@ const SECRET_KEY = process.env.JWT_SECRET
 const authenticateJwt = require('../middleware/authorization');
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
+router.get('/', function (req, res, next) {
   res.send('respond with a resource');
 });
 
@@ -25,9 +25,17 @@ router.post('/inscription', async (req, res) => {
     }
 
     const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    
+
     if (!EMAIL_REGEX.test(req.body.email)) {
       return res.json({ result: false, error: 'Format email invalide' });
+    }
+
+    if (req.body.password.length < 8) {
+      console.log('mdp court');
+      return res.json({
+        result: false,
+        error: 'Le mot de passe doit contenir au moins 8 caractères'
+      });
     }
 
     const existingUser = await User.findOne({ email: req.body.email });
@@ -37,7 +45,7 @@ router.post('/inscription', async (req, res) => {
 
     const hash = bcrypt.hashSync(req.body.password, 10);
     const refreshToken = uid2(32);
-    
+
     const newUser = new User({
       email: req.body.email,
       password: hash,
@@ -46,14 +54,14 @@ router.post('/inscription', async (req, res) => {
     });
 
     await newUser.save();
-    
+
     const accessToken = jwt.sign(
       { userId: newUser._id },
       SECRET_KEY,
       { expiresIn: '15m' }
     );
 
-    res.json({ 
+    res.json({
       result: true,
       accessToken: accessToken,
       refreshToken: refreshToken,
@@ -69,16 +77,16 @@ router.post('/inscription', async (req, res) => {
 
 
 router.get('/profil', authenticateJwt, (req, res) => {
-  
+
   User.findById(req.user.userId)
     .then(user => {
       if (!user) {
-        return res.status(404).json({ 
-          result: false, 
-          error: 'Utilisateur introuvable' 
+        return res.status(404).json({
+          result: false,
+          error: 'Utilisateur introuvable'
         });
       }
-      
+
       res.json({
         result: true,
         user: { id: user._id, email: user.email }
