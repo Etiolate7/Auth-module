@@ -61,10 +61,17 @@ router.post('/inscription', async (req, res) => {
       { expiresIn: '15m' }
     );
 
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/users/refresh'
+    });
+
     res.json({
       result: true,
       accessToken: accessToken,
-      refreshToken: refreshToken,
       expiresIn: 900,
       message: 'Inscription et connexion réussies'
     });
