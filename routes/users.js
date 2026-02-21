@@ -84,11 +84,19 @@ router.post('/inscription', async (req, res) => {
 
 
 router.post('/refresh', (req, res) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ 
+      result: false, 
+      error: 'Refresh token manquant' 
+    });
+  }
   
   User.findOne({ token: refreshToken })
     .then(user => {
       if (!user) {
+        res.clearCookie('refreshToken', { path: '/users/refresh' });
         return res.status(403).json({ 
           result: false, 
           error: 'Refresh token invalide' 
@@ -108,6 +116,7 @@ router.post('/refresh', (req, res) => {
       });
     })
     .catch(err => {
+      console.log('erreur token refresh');
       res.status(500).json({ 
         result: false, 
         error: 'Erreur serveur' 
