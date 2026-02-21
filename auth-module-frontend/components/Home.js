@@ -13,11 +13,11 @@ function Home() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: inscriptionEmail, password: inscriptionPassword }),
+      credentials: 'include'
     }).then(response => response.json())
       .then(data => {
         if (data.result) {
             localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('refreshToken', data.refreshToken);
             window.location.href = '/main';
         } else {
           console.log(data.error)
