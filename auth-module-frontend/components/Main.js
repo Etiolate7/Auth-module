@@ -8,7 +8,7 @@ const handlelogout = () => {
     credentials: 'include'
   }).then(() => {
     localStorage.removeItem('accessToken');
-    window.location.href = '/home';
+    window.location.href = '/';
   });
 };
 
