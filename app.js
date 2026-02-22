@@ -12,7 +12,12 @@ var usersRouter = require('./routes/users');
 var app = express();
 
 const cors = require('cors');
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3001',
+    credentials: true
+}));
+
+app.options('*', cors());
 
 app.use(logger('dev'));
 app.use(express.json());
