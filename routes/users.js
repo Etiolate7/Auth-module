@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 
 require('../models/connection');
 const User = require('../models/users');
+const Session = require ('../models/sessions');
 const { checkBody } = require('../modules/users');
 const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
@@ -11,6 +12,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = process.env.JWT_SECRET
 const authenticateJwt = require('../middleware/authorization');
+const hashToken = require ('../utilitaires/hashToken');
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
@@ -49,11 +51,24 @@ router.post('/inscription', async (req, res) => {
     const newUser = new User({
       email: req.body.email,
       password: hash,
-      token: refreshToken,
       created: new Date(),
     });
 
     await newUser.save();
+
+    const tokenHash = hashToken(refreshToken);
+    const userAgent = req.headers['user-agent'] || 'Inconnu';
+    const ipAddress = req.ip || req.connection.remoteAddress;
+
+    const session = new Session({
+      userId: newUser._id,
+      refreshTokenHash: tokenHash,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      userAgent: userAgent,
+      ipAddress: ipAddress
+    });
+    
+    await session.save();
 
     const accessToken = jwt.sign(
       { userId: newUser._id },
