@@ -78,7 +78,8 @@ router.post('/inscription', async (req, res) => {
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
+      //secure: process.env.NODE_ENV === 'production' or 'true',
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/users/refresh'
@@ -98,45 +99,63 @@ router.post('/inscription', async (req, res) => {
 });
 
 
-router.post('/refresh', (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
+router.post('/refresh', async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
 
-  if (!refreshToken) {
-    return res.status(401).json({ 
+    if (!refreshToken) {
+      return res.status(401).json({ 
+        result: false, 
+        error: 'Refresh token manquant' 
+      });
+    }
+
+    const tokenHash = hashToken(refreshToken);
+    
+    const session = await Session.findOne({ 
+      refreshTokenHash: tokenHash,
+      revokedAt: null,
+    });
+
+    if (!session) {
+      res.clearCookie('refreshToken', { path: '/users/refresh' });
+      return res.status(403).json({ 
+        result: false, 
+        error: 'Session invalide ou expirée' 
+      });
+    }
+
+    if (session.expiresAt < new Date()) {
+      await Session.deleteOne({ _id: session._id });
+      res.clearCookie('refreshToken', { path: '/users/refresh' });
+      return res.status(403).json({ 
+        result: false, 
+        error: 'Session expirée' 
+      });
+    }
+
+    session.lastUsedAt = new Date();
+    await session.save();
+
+    const newAccessToken = jwt.sign(
+      { userId: session.userId._id },
+      SECRET_KEY,
+      { expiresIn: '15m' }
+    );
+    
+    res.json({
+      result: true,
+      accessToken: newAccessToken,
+      expiresIn: 900
+    });
+
+  } catch (error) {
+    console.error('Erreur refresh:', error);
+    res.status(500).json({ 
       result: false, 
-      error: 'Refresh token manquant' 
+      error: 'Erreur serveur' 
     });
   }
-  
-  User.findOne({ token: refreshToken })
-    .then(user => {
-      if (!user) {
-        res.clearCookie('refreshToken', { path: '/users/refresh' });
-        return res.status(403).json({ 
-          result: false, 
-          error: 'Refresh token invalide' 
-        });
-      }
-      
-      const newAccessToken = jwt.sign(
-        { userId: user._id },
-        SECRET_KEY,
-        { expiresIn: '15m' }
-      );
-      
-      res.json({
-        result: true,
-        accessToken: newAccessToken,
-        expiresIn: 900
-      });
-    })
-    .catch(err => {
-      console.log('erreur token refresh');
-      res.status(500).json({ 
-        result: false, 
-        error: 'Erreur serveur' 
-      });
-    });
 });
 
 router.post('/logout', (req, res) => {
