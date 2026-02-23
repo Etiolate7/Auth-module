@@ -99,6 +99,73 @@ router.post('/inscription', async (req, res) => {
 });
 
 
+router.post('/connexion', async (req, res) => {
+  try {
+    if (!checkBody(req.body, ['email', 'password'])) {
+      return res.json({ result: false, error: 'Missing or empty fields' });
+    }
+
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return res.status(401).json({ 
+        result: false, 
+        error: 'Identifiants invalides' 
+      });
+    }
+
+    const validPassword = bcrypt.compareSync(req.body.password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ 
+        result: false, 
+        error: 'Identifiants invalides' 
+      });
+    }
+
+    const refreshToken = uid2(32);
+    const tokenHash = hashToken(refreshToken);
+    
+    const userAgent = req.headers['user-agent'] || 'Inconnu';
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    
+    const session = new Session({
+      userId: user._id,
+      refreshTokenHash: tokenHash,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      userAgent: userAgent,
+      ipAddress: ipAddress
+    });
+    
+    await session.save();
+
+    const accessToken = jwt.sign(
+      { userId: user._id },
+      SECRET_KEY,
+      { expiresIn: '15m' }
+    );
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false,
+      //secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/users/refresh'
+    });
+
+    res.json({
+      result: true,
+      accessToken: accessToken,
+      expiresIn: 900,
+      message: 'Connexion réussie'
+    });
+
+  } catch (error) {
+    console.error('Erreur connexion:', error);
+    res.status(500).json({ result: false, error: 'Erreur serveur' });
+  }
+});
+
+
 router.post('/refresh', async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
