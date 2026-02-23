@@ -158,19 +158,23 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
-router.post('/logout', (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
-  
-  if (refreshToken) {
-    User.findOneAndUpdate(
-      { token: refreshToken },
-      { token: null }
-    ).catch(err => console.error('Erreur logout:', err));
+router.post('/logout', async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    
+    if (refreshToken) {
+      const tokenHash = hashToken(refreshToken);
+      
+      await Session.deleteOne({ refreshTokenHash: tokenHash });
+    }
+    
+    res.clearCookie('refreshToken', { path: '/users/refresh' });
+    res.json({ result: true, message: 'Déconnexion réussie' });
+    
+  } catch (error) {
+    console.error('Erreur logout:', error);
+    res.status(500).json({ result: false, error: 'Erreur serveur' });
   }
-  
-  res.clearCookie('refreshToken', { path: '/users/refresh' });
-  
-  res.json({ result: true, message: 'Déconnexion réussie' });
 });
 
 
