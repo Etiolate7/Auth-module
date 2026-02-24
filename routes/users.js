@@ -245,6 +245,29 @@ router.post('/logout', async (req, res) => {
 });
 
 
+router.get('/sessions', authenticateJwt, async (req, res) => {
+  try {
+    const sessions = await Session.find({ 
+      userId: req.user.userId,
+      revokedAt: null,
+      expiresAt: { $gt: new Date() }
+    }).select('-refreshTokenHash');
+    
+    const currentToken = req.cookies.refreshToken;
+    const currentTokenHash = currentToken ? hashToken(currentToken) : null;
+    
+    res.json({
+      result: true,
+      sessions: sessions.map(s => ({ id: s._id, expiresAt: s.expiresAt, createdAt: s.createdAt, lastUsedAt: s.lastUsedAt, userAgent: s.userAgent, ipAddress: s.ipAddress, isCurrent: s.refreshTokenHash === currentTokenHash
+      }))
+    });
+    
+  } catch (error) {
+    res.status(500).json({ result: false, error: 'Erreur serveur' });
+  }
+});
+
+
 router.get('/profil', authenticateJwt, (req, res) => {
 
   User.findById(req.user.userId)
