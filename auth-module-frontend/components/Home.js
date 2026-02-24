@@ -53,8 +53,10 @@ function Home() {
         <text>{erreurInscription}</text>
         <input onChange={(e) => setInscriptionEmail(e.target.value)} value={inscriptionEmail} placeholder="Email"></input>
         <input onChange={(e) => setInscriptionPassword(e.target.value)} value={inscriptionPassword} placeholder="Mot de passe"></input>
+        <div className={styles.buttons}>
         <button onClick={SuivantInscription}>Entrer</button>
         <button onClick={SuivantConnexion}>Se connecter</button>
+        </div>
       </main>
     </div>
   );
