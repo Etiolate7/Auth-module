@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 require('../models/connection');
 const User = require('../models/users');
-const Session = require ('../models/sessions');
+const Session = require('../models/sessions');
 const { checkBody } = require('../modules/users');
 const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
@@ -12,7 +12,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = process.env.JWT_SECRET
 const authenticateJwt = require('../middleware/authorization');
-const hashToken = require ('../utilitaires/hashToken');
+const hashToken = require('../utilitaires/hashToken');
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
@@ -67,7 +67,7 @@ router.post('/inscription', async (req, res) => {
       userAgent: userAgent,
       ipAddress: ipAddress
     });
-    
+
     await session.save();
 
     const accessToken = jwt.sign(
@@ -107,26 +107,26 @@ router.post('/connexion', async (req, res) => {
 
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-      return res.status(401).json({ 
-        result: false, 
-        error: 'Identifiants invalides' 
+      return res.status(401).json({
+        result: false,
+        error: 'Identifiants invalides'
       });
     }
 
     const validPassword = bcrypt.compareSync(req.body.password, user.password);
     if (!validPassword) {
-      return res.status(401).json({ 
-        result: false, 
-        error: 'Identifiants invalides' 
+      return res.status(401).json({
+        result: false,
+        error: 'Identifiants invalides'
       });
     }
 
     const refreshToken = uid2(32);
     const tokenHash = hashToken(refreshToken);
-    
+
     const userAgent = req.headers['user-agent'] || 'Inconnu';
     const ipAddress = req.ip || req.connection.remoteAddress;
-    
+
     const session = new Session({
       userId: user._id,
       refreshTokenHash: tokenHash,
@@ -134,7 +134,7 @@ router.post('/connexion', async (req, res) => {
       userAgent: userAgent,
       ipAddress: ipAddress
     });
-    
+
     await session.save();
 
     const accessToken = jwt.sign(
@@ -168,39 +168,57 @@ router.post('/connexion', async (req, res) => {
 
 router.post('/refresh', async (req, res) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const oldRefreshToken = req.cookies.refreshToken;
 
-    if (!refreshToken) {
-      return res.status(401).json({ 
-        result: false, 
-        error: 'Refresh token manquant' 
+    if (!oldRefreshToken) {
+      return res.status(401).json({
+        result: false,
+        error: 'Refresh token manquant'
       });
     }
 
-    const tokenHash = hashToken(refreshToken);
-    
-    const session = await Session.findOne({ 
-      refreshTokenHash: tokenHash,
+    const oldTokenHash = hashToken(oldRefreshToken);
+
+    const session = await Session.findOne({
+      refreshTokenHash: oldTokenHash,
       revokedAt: null,
     });
 
     if (!session) {
-      res.clearCookie('refreshToken', { path: '/users/refresh' });
-      return res.status(403).json({ 
-        result: false, 
-        error: 'Session invalide ou expirée' 
+      const oldSession = await Session.findOne({
+        refreshTokenHash: oldTokenHash
       });
+      if (oldSession) {
+        console.log(`Tentative utilisation vieux token ${oldSession.userId._id}`)
+
+        await Session.deleteMany({ userId: oldSession.userId._id });
+        res.clearCookie('refreshToken', { path: '/users/refresh' });
+        return res.status(403).json({
+          result: false,
+          error: 'Session compromise, toutes sessions révoquées'
+        });
+      }
+      res.clearCookie('refreshToken', { path: '/users/refresh' });
+        return res.status(403).json({
+          result: false,
+          error: 'Token invalide'
+        });
     }
+
 
     if (session.expiresAt < new Date()) {
       await Session.deleteOne({ _id: session._id });
       res.clearCookie('refreshToken', { path: '/users/refresh' });
-      return res.status(403).json({ 
-        result: false, 
-        error: 'Session expirée' 
+      return res.status(403).json({
+        result: false,
+        error: 'Session expirée'
       });
     }
 
+    const newRefreshToken = uid2(32);
+    const newTokenHash = hashToken(newRefreshToken);
+
+    session.refreshTokenHash = newTokenHash;
     session.lastUsedAt = new Date();
     await session.save();
 
@@ -209,7 +227,16 @@ router.post('/refresh', async (req, res) => {
       SECRET_KEY,
       { expiresIn: '15m' }
     );
-    
+
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: false,
+      //secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/users/refresh'
+    });
+
     res.json({
       result: true,
       accessToken: newAccessToken,
@@ -218,9 +245,9 @@ router.post('/refresh', async (req, res) => {
 
   } catch (error) {
     console.error('Erreur refresh:', error);
-    res.status(500).json({ 
-      result: false, 
-      error: 'Erreur serveur' 
+    res.status(500).json({
+      result: false,
+      error: 'Erreur serveur'
     });
   }
 });
@@ -228,16 +255,16 @@ router.post('/refresh', async (req, res) => {
 router.post('/logout', async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
-    
+
     if (refreshToken) {
       const tokenHash = hashToken(refreshToken);
-      
+
       await Session.deleteOne({ refreshTokenHash: tokenHash });
     }
-    
+
     res.clearCookie('refreshToken', { path: '/users/refresh' });
     res.json({ result: true, message: 'Déconnexion réussie' });
-    
+
   } catch (error) {
     console.error('Erreur logout:', error);
     res.status(500).json({ result: false, error: 'Erreur serveur' });
@@ -247,21 +274,22 @@ router.post('/logout', async (req, res) => {
 
 router.get('/sessions', authenticateJwt, async (req, res) => {
   try {
-    const sessions = await Session.find({ 
+    const sessions = await Session.find({
       userId: req.user.userId,
       revokedAt: null,
       expiresAt: { $gt: new Date() }
     }).select('-refreshTokenHash');
-    
+
     const currentToken = req.cookies.refreshToken;
     const currentTokenHash = currentToken ? hashToken(currentToken) : null;
-    
+
     res.json({
       result: true,
-      sessions: sessions.map(s => ({ id: s._id, expiresAt: s.expiresAt, createdAt: s.createdAt, lastUsedAt: s.lastUsedAt, userAgent: s.userAgent, ipAddress: s.ipAddress, isCurrent: s.refreshTokenHash === currentTokenHash
+      sessions: sessions.map(s => ({
+        id: s._id, expiresAt: s.expiresAt, createdAt: s.createdAt, lastUsedAt: s.lastUsedAt, userAgent: s.userAgent, ipAddress: s.ipAddress, isCurrent: s.refreshTokenHash === currentTokenHash
       }))
     });
-    
+
   } catch (error) {
     res.status(500).json({ result: false, error: 'Erreur serveur' });
   }
