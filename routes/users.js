@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 require('../models/connection');
 const User = require('../models/users');
 const Session = require('../models/sessions');
+const UsedToken = require('../models/usedToken');
 const { checkBody } = require('../modules/users');
 const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
@@ -179,6 +180,17 @@ router.post('/refresh', async (req, res) => {
 
     const oldTokenHash = hashToken(oldRefreshToken);
 
+    const wasUsed = await UsedToken.findOne({ tokenHash: oldTokenHash });
+    if (wasUsed) {
+      await Session.deleteMany({ userId: wasUsed.userId });
+      res.clearCookie('refreshToken', { path: '/users/refresh' });
+      
+      return res.status(403).json({
+        result: false,
+        error: 'Sessions ont été révoquées, compromises'
+      });
+    }
+
     const session = await Session.findOne({
       refreshTokenHash: oldTokenHash,
       revokedAt: null,
@@ -188,21 +200,26 @@ router.post('/refresh', async (req, res) => {
       const oldSession = await Session.findOne({
         refreshTokenHash: oldTokenHash
       });
+      
       if (oldSession) {
-        console.log(`Tentative utilisation vieux token ${oldSession.userId._id}`)
-
-        await Session.deleteMany({ userId: oldSession.userId._id });
+        await UsedToken.create({
+          tokenHash: oldTokenHash,
+          userId: oldSession.userId
+        });
+        
+        await Session.deleteMany({ userId: oldSession.userId });
         res.clearCookie('refreshToken', { path: '/users/refresh' });
         return res.status(403).json({
           result: false,
-          error: 'Session compromise, toutes sessions révoquées'
+          error: 'Session révoquée'
         });
       }
+      
       res.clearCookie('refreshToken', { path: '/users/refresh' });
-        return res.status(403).json({
-          result: false,
-          error: 'Token invalide'
-        });
+      return res.status(403).json({
+        result: false,
+        error: 'Token invalide'
+      });
     }
 
 
@@ -217,6 +234,11 @@ router.post('/refresh', async (req, res) => {
 
     const newRefreshToken = uid2(32);
     const newTokenHash = hashToken(newRefreshToken);
+
+    await UsedToken.create({
+      tokenHash: oldTokenHash,
+      userId: session.userId
+    });
 
     session.refreshTokenHash = newTokenHash;
     session.lastUsedAt = new Date();
