@@ -278,10 +278,18 @@ router.post('/logout', async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
 
-    if (refreshToken) {
-      const tokenHash = hashToken(refreshToken);
+    if (!refreshToken) {
+      return res.json({ result: true, message: 'Déjà déconnecté' });
+    }
 
-      await Session.deleteOne({ refreshTokenHash: tokenHash });
+    const tokenHash = hashToken(refreshToken);
+    
+    const session = await Session.findOne({ refreshTokenHash: tokenHash });
+    
+    if (session) {
+      console.log(`Déconnexion ${session._id} pour utilisateur ${session.userId}`);
+      
+      await Session.deleteOne({ _id: session._id });
     }
 
     res.clearCookie('refreshToken', { path: '/users/refresh' });
