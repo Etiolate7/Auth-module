@@ -302,6 +302,24 @@ router.post('/logout', async (req, res) => {
 });
 
 
+router.post('/logout/all', authenticateJwt, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    await Session.countDocuments({ userId: userId, revokedAt: null });
+    
+    await Session.deleteMany({ userId: userId });
+    console.log('Déconnexion globale');
+
+    res.clearCookie('refreshToken', { path: '/users/refresh' });
+    res.json({ result: true, message: "Toutes les sessions ont été déconnectées" });
+
+  } catch (error) {
+    res.status(500).json({ result: false, error: 'Erreur serveur' });
+  }
+});
+
+
 router.get('/sessions', authenticateJwt, async (req, res) => {
   try {
     const sessions = await Session.find({
