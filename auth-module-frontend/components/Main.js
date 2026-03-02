@@ -1,7 +1,33 @@
 import styles from '../styles/Main.module.css';
+import { useState, useEffect } from 'react';
 
 function Main() {
   const [message, setMessage] = useState('');
+  const [sessions, setSessions] = useState([]);
+
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const fetchSessions = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/users/sessions', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+      
+      const data = await response.json();
+      if (data.result) {
+        setSessions(data.sessions);
+      }
+    } catch (error) {
+      console.error('Erreur chargement session:', error);
+    }
+  };
 
 const handlelogout = async () => {
     try {
@@ -49,6 +75,31 @@ const handlelogout = async () => {
     }
   };
 
+  const handleRevokeSession = async (sessionId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/users/sessions/${sessionId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {'Authorization': `Bearer ${localStorage.getItem('accessToken')}`}
+      });
+      
+      const data = await response.json();
+      
+      if (data.result) {
+        fetchSessions();
+        setMessage('Session révoquée avec succès');
+        if (data.isCurrentSession) {
+          localStorage.removeItem('accessToken');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1500);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur révocation:', error);
+    }
+  };
+
   return (
     <div>
       <main className={styles.main}>
@@ -62,6 +113,33 @@ const handlelogout = async () => {
         <button onClick={handlelogout}>Logout</button>
         <button onClick={handlelogoutall}>Logout toutes les sessions</button>
         </div>
+        {sessions.length > 0 && (
+          <div className={styles.sessionsSection}>
+            <h3>Sessions actives ({sessions.length})</h3>
+            <div className={styles.sessionsList}>
+              {sessions.map((session) => (
+                <div key={session.id} className={styles.sessionCard}>
+                  <div className={styles.sessionInfo}>
+                    <p>Appareil: {session.userAgent}</p>
+                    <p>IP: {session.ipAddress}</p>
+                    <p>Connecté depuis: {new Date(session.createdAt).toLocaleString()}</p>
+                    <p>Dernière activité: {new Date(session.lastUsedAt).toLocaleString()}</p>
+                    {session.isCurrent && (
+                      <span className={styles.currentBadge}>Appareil actuel</span>
+                    )}
+                  </div>
+                  {!session.isCurrent && (
+                    <button 
+                      onClick={() => handleRevokeSession(session.id)}
+                      className={styles.revokeButton}>
+                      Révoquer cette session
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
