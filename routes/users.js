@@ -302,6 +302,41 @@ router.post('/logout', async (req, res) => {
 });
 
 
+router.delete('/sessions/:sessionId', authenticateJwt, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const userId = req.user.userId;
+    
+    const session = await Session.findOne({ 
+      _id: sessionId,
+      userId: userId 
+    });
+    
+    if (!session) {
+      return res.status(404).json({ 
+      result: false, 
+      error: 'Session introuvable' 
+      });
+    }
+    
+    await Session.deleteOne({ _id: sessionId });
+    
+    const currentToken = req.cookies.refreshToken;
+    if (currentToken) {
+      const currentTokenHash = hashToken(currentToken);
+      if (session.refreshTokenHash === currentTokenHash) {
+        res.clearCookie('refreshToken', { path: '/users/refresh' });
+      }
+    }
+    
+    res.json({ result: true, message: 'Session révoquée' });
+    
+  } catch (error) {
+    res.status(500).json({ result: false, error: 'Erreur serveur' });
+  }
+});
+
+
 router.post('/logout/all', authenticateJwt, async (req, res) => {
   try {
     const userId = req.user.userId;
