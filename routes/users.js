@@ -9,6 +9,7 @@ const UsedToken = require('../models/usedToken');
 const { checkBody } = require('../modules/users');
 const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
+const { authRoutesLimite, refreshLimite, registerLimite } = require('../middleware/rateLimit');
 
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = process.env.JWT_SECRET
@@ -21,7 +22,7 @@ router.get('/', function (req, res, next) {
 });
 
 
-router.post('/inscription', async (req, res) => {
+router.post('/inscription', registerLimite, async (req, res) => {
   try {
     if (!checkBody(req.body, ['email', 'password'])) {
       return res.json({ result: false, error: 'Missing or empty fields' });
@@ -100,7 +101,7 @@ router.post('/inscription', async (req, res) => {
 });
 
 
-router.post('/connexion', async (req, res) => {
+router.post('/connexion', authRoutesLimite, async (req, res) => {
   try {
     if (!checkBody(req.body, ['email', 'password'])) {
       return res.json({ result: false, error: 'Missing or empty fields' });
@@ -167,7 +168,7 @@ router.post('/connexion', async (req, res) => {
 });
 
 
-router.post('/refresh', async (req, res) => {
+router.post('/refresh', refreshLimite, async (req, res) => {
   try {
     const oldRefreshToken = req.cookies.refreshToken;
 
