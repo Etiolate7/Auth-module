@@ -100,6 +100,13 @@ const handlelogout = async () => {
     }
   };
 
+  const formatIpAddress = (ip) => {
+  if (ip === '::1' || ip === '::ffff:127.0.0.1') {
+    return 'localhost (127.0.0.1)';
+  }
+  return ip;
+};
+
   return (
     <div>
       <main className={styles.main}>
@@ -121,7 +128,7 @@ const handlelogout = async () => {
                 <div key={session.id} className={styles.sessionCard}>
                   <div className={styles.sessionInfo}>
                     <p>Appareil: {session.userAgent}</p>
-                    <p>IP: {session.ipAddress}</p>
+                    <p>IP: {formatIpAddress(session.ipAddress)}</p>
                     <p>Connecté depuis: {new Date(session.createdAt).toLocaleString()}</p>
                     <p>Dernière activité: {new Date(session.lastUsedAt).toLocaleString()}</p>
                     {session.isCurrent && (
