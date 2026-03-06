@@ -31,6 +31,7 @@
   color: #000;
   border: 1px solid #fdcc37;
   border-radius: 4px;
+  font-size: 15px;
   cursor: pointer;
 }
 
@@ -41,6 +42,7 @@
   color: white;
   border: 1px solid #b32231;
   border-radius: 4px;
+  font-size: 15px;
   cursor: pointer;
 }
 
@@ -54,6 +56,47 @@
   flex-direction: column;
   gap: 10px;
   margin-top: 10px;
+}
+
+.sessionCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.sessionInfo {
+  flex: 1;
+}
+
+.sessionInfo p {
+  margin: 3px 0;
+}
+
+.currentBadge {
+  display: inline-block;
+  padding: 3px 5px;
+  background-color: #28a745;
+  color: white;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.revokeButton {
+  padding: 5px 10px;
+  background-color: #9da1a5;
+  color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.revokeButton:hover {
+  background-color: #5a6268;
 }
 
 .title {
