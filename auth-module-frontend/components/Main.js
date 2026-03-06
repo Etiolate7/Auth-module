@@ -117,8 +117,8 @@ const handlelogout = async () => {
           </div>
         )}
         <div className={styles.groupeButtons}>
-        <button onClick={handlelogout}>Logout</button>
-        <button onClick={handlelogoutall}>Logout toutes les sessions</button>
+        <button className={styles.logoutButton} onClick={handlelogout}>Logout</button>
+        <button className={styles.logoutAllButton} onClick={handlelogoutall}>Logout toutes les sessions</button>
         </div>
         {sessions.length > 0 && (
           <div className={styles.sessionsSection}>
