@@ -12,6 +12,7 @@
   line-height: 1.15;
   font-size: 4rem;
   margin-bottom: 20px;
+  font-size: 30px;
 }
 
 .erreur {
@@ -24,4 +25,19 @@
   width: 300px;
   max-width: 100%;
   text-align: center;
+}
+
+.inputEmail, .inputPassword {
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #c8c8c8;
+  border-radius: 4px;
+  font-size: 15px;
+  width: 300px;
+  max-width: 100%;
+}
+
+.inputEmail:focus, .inputPassword:focus {
+  outline: none;
+  border-color: #444444;
 }
