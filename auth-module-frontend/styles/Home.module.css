@@ -41,3 +41,19 @@
   outline: none;
   border-color: #444444;
 }
+
+.buttons {
+  display: flex;
+  gap: 15px;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.buttonEntrez, .buttonInscription {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px black solid;
+  font-size: 15px;
+  cursor: pointer;
+  min-width: 120px;
+}
