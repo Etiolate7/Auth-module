@@ -17,8 +17,8 @@ function Home() {
     }).then(response => response.json())
       .then(data => {
         if (data.result) {
-            localStorage.setItem('accessToken', data.accessToken);
-            window.location.href = '/main';
+          localStorage.setItem('accessToken', data.accessToken);
+          window.location.href = '/main';
         } else {
           console.log(data.error)
           setErreurInscription(data.error)
@@ -35,8 +35,8 @@ function Home() {
     }).then(response => response.json())
       .then(data => {
         if (data.result) {
-            localStorage.setItem('accessToken', data.accessToken);
-            window.location.href = '/main';
+          localStorage.setItem('accessToken', data.accessToken);
+          window.location.href = '/main';
         } else {
           console.log(data.error)
           setErreurInscription(data.error)
@@ -50,12 +50,14 @@ function Home() {
         <h1 className={styles.title}>
           Inscription/Connexion
         </h1>
-        <text>{erreurInscription}</text>
-        <input onChange={(e) => setInscriptionEmail(e.target.value)} value={inscriptionEmail} placeholder="Email"></input>
-        <input onChange={(e) => setInscriptionPassword(e.target.value)} value={inscriptionPassword} placeholder="Mot de passe"></input>
+        {erreurInscription && (
+          <text className={styles.erreur}>{erreurInscription}</text>
+        )}
+        <input className={styles.inputEmail} onChange={(e) => setInscriptionEmail(e.target.value)} value={inscriptionEmail} placeholder="Email"></input>
+        <input className={styles.inputPassword} onChange={(e) => setInscriptionPassword(e.target.value)} value={inscriptionPassword} placeholder="Mot de passe"></input>
         <div className={styles.buttons}>
-        <button onClick={SuivantInscription}>Entrer</button>
-        <button onClick={SuivantConnexion}>Se connecter</button>
+          <button className={styles.buttonEntrez} onClick={SuivantInscription}>Entrer</button>
+          <button className={styles.buttonInscription} onClick={SuivantConnexion}>Se connecter</button>
         </div>
       </main>
     </div>

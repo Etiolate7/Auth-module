@@ -4,24 +4,24 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 4rem 0;
-}
-
-.buttons {
-  display: flex;
-  margin-top: 10px;
+  padding: 40px;
+  margin: 0 auto;
 }
 
 .title {
   line-height: 1.15;
   font-size: 4rem;
+  margin-bottom: 20px;
 }
 
-.title a {
-  color: #0070f3;
-  text-decoration: none;
-}
-
-.title a:hover, .title a:focus, .title a:active {
-  text-decoration: underline;
+.erreur {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  width: 300px;
+  max-width: 100%;
+  text-align: center;
 }
