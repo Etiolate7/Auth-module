@@ -44,17 +44,17 @@ Un module d'authentification robuste et sécurisé pour applications SaaS, conç
 - **Audit** : Traçabilité (IP, userAgent, dates)
 
 ## Instalation
-### 1. Cloner le repository
-1. git clone https://github.com/votre-repo/auth-module.git
-2. cd auth-module
+### 1. Cloner le repository  
+git clone https://github.com/votre-repo/auth-module.git  
+cd auth-module
 
 ### 2. Installer les dépendances
 yarn install
 
 ### 3. Configurer vos variables d'environnement
-1. JWT_SECRET=votre_secret_très_long_et_aléatoire
-2. MONGODB_URI=mongodb://localhost:27017/auth_db
-3. NODE_ENV=development
+JWT_SECRET=votre_secret_très_long_et_aléatoire  
+MONGODB_URI=mongodb://localhost:27017/auth_db  
+NODE_ENV=development
 
 ### 4. Démarrer le serveur
 yarn dev
@@ -80,38 +80,38 @@ yarn dev
 # Structure de la base de données
 ## Collection users
 
-{ _id: ObjectId,
-  email: String (unique),
-  password: String (hashé),
-  created: Date }
+{ _id: ObjectId,  
+  email: String (unique),  
+  password: String (hashé),  
+  created: Date }  
   
 ## Collection sessions
 
-{ _id: ObjectId,
-  userId: ObjectId (ref: users),
-  refreshTokenHash: String (unique),
-  expiresAt: Date,
-  createdAt: Date,
-  lastUsedAt: Date,
-  userAgent: String,
-  ipAddress: String,
-  revokedAt: Date (null si active) }
+{ _id: ObjectId,  
+  userId: ObjectId (ref: users),  
+  refreshTokenHash: String (unique),  
+  expiresAt: Date,  
+  createdAt: Date,  
+  lastUsedAt: Date,  
+  userAgent: String,  
+  ipAddress: String,  
+  revokedAt: Date (null si active) }  
   
 ## Collection usedtokens (pour détection de reuse)
 
-{ _id: ObjectId,
-  tokenHash: String (unique),
-  userId: ObjectId,
-  usedAt: Date,
-  expiresAt: Date (TTL index) }
+{ _id: ObjectId,  
+  tokenHash: String (unique),  
+  userId: ObjectId,  
+  usedAt: Date,  
+  expiresAt: Date (TTL index) }  
   
 # Limites connues
 Ce projet est volontairement concentré sur le cœur de l'authentification. Il ne gère pas :
 
-❌ Confirmation d'email
-❌ Reset de mot de passe
-❌ OAuth (Google, GitHub, etc.)
-❌ Interface utilisateur avancée
-❌ 2FA (Double authentification)
+❌ Confirmation d'email  
+❌ Reset de mot de passe  
+❌ OAuth (Google, GitHub, etc.)  
+❌ Interface utilisateur avancée  
+❌ 2FA (Double authentification)  
 
 Ces fonctionnalités pourraient être ajoutées dans une version future, mais l'objectif principal était de démontrer une architecture d'authentification robuste et sécurisée !
