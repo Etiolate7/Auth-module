@@ -44,10 +44,9 @@ Un module d'authentification robuste et sécurisé pour applications SaaS, conç
 - **Audit** : Traçabilité (IP, userAgent, dates)
 
 ## Instalation
-### Étapes
 # 1. Cloner le repository
-git clone https://github.com/votre-repo/secure-auth-module.git
-cd secure-auth-module
+git clone https://github.com/votre-repo/auth-module.git
+cd auth-module
 
 # 2. Installer les dépendances
 yarn install
