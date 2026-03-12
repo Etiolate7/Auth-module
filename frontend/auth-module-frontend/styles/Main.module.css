@@ -1,0 +1,114 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 40px;
+  margin: 0 auto;
+}
+
+.message {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #b4d5bb;
+}
+
+.groupeButtons {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.logoutButton {
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #ffd65c;
+  color: #000;
+  border: 1px solid #fdcc37;
+  border-radius: 4px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.logoutAllButton {
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #cb3d4b;
+  color: white;
+  border: 1px solid #b32231;
+  border-radius: 4px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+
+.sessionsSection {
+  margin-top: 30px;
+}
+
+.sessionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.sessionCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.sessionInfo {
+  flex: 1;
+}
+
+.sessionInfo p {
+  margin: 3px 0;
+}
+
+.currentBadge {
+  display: inline-block;
+  padding: 3px 5px;
+  background-color: #28a745;
+  color: white;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.revokeButton {
+  padding: 5px 10px;
+  background-color: #73797e;
+  color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.revokeButton:hover {
+  background-color: #5a6268;
+}
+
+.title {
+  line-height: 1.15;
+  font-size: 4rem;
+}
+
+.title a {
+  color: #0070f3;
+  text-decoration: none;
+}
+
+.title a:hover, .title a:focus, .title a:active {
+  text-decoration: underline;
+}
