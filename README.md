@@ -2,10 +2,6 @@
 
 Un module d'authentification robuste et sécurisé pour applications SaaS, conçu pour protéger contre les attaques courantes tout en offrant une expérience utilisateur optimale.
 
-## 🏗️ Architecture
-
-![Flux d'authentification](./docs/auth-flow.png)
-
 ### Vue d'ensemble du flux
 1. **Inscription/Connexion** → Création d'une session
 2. **Génération de tokens** → Access token (JWT) + Refresh token
@@ -14,7 +10,7 @@ Un module d'authentification robuste et sécurisé pour applications SaaS, conç
 5. **Rotation** → Nouveau refresh token à chaque utilisation
 6. **Révocation** → Suppression de session au logout
 
-## 🛡️ Menaces & Mitigations
+## Menaces & Mitigations
 
 | Menace | Mitigation implémentée |
 |--------|------------------------|
@@ -25,7 +21,7 @@ Un module d'authentification robuste et sécurisé pour applications SaaS, conç
 | **Brute force** | Rate limiting (5 tentatives/minute) |
 | **Session hijacking** | Fingerprint (userAgent, IP) + rotation |
 
-## 🔧 Choix Techniques
+## Choix Techniques
 
 ### Pourquoi deux tokens ?
 - **Access token court (15min)** : Réduit la fenêtre de tir en cas de vol
