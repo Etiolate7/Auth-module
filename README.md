@@ -45,16 +45,16 @@ Un module d'authentification robuste et sécurisé pour applications SaaS, conç
 
 ## Instalation
 # 1. Cloner le repository
-git clone https://github.com/votre-repo/auth-module.git
-cd auth-module
+1. git clone https://github.com/votre-repo/auth-module.git
+2. cd auth-module
 
 # 2. Installer les dépendances
 yarn install
 
 # 3. Configurer vos variables d'environnement
-JWT_SECRET=votre_secret_très_long_et_aléatoire
-MONGODB_URI=mongodb://localhost:27017/auth_db
-NODE_ENV=development
+1. JWT_SECRET=votre_secret_très_long_et_aléatoire
+2. MONGODB_URI=mongodb://localhost:27017/auth_db
+3. NODE_ENV=development
 
 # 4. Démarrer le serveur
 yarn dev
