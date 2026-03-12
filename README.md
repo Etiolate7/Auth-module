@@ -1,4 +1,4 @@
-# 🔐 Secure Auth Module
+# Secure Auth Module
 
 Un module d'authentification robuste et sécurisé pour applications SaaS, conçu pour protéger contre les attaques courantes tout en offrant une expérience utilisateur optimale.
 
@@ -44,22 +44,22 @@ Un module d'authentification robuste et sécurisé pour applications SaaS, conç
 - **Audit** : Traçabilité (IP, userAgent, dates)
 
 ## Instalation
-# 1. Cloner le repository
+### 1. Cloner le repository
 1. git clone https://github.com/votre-repo/auth-module.git
 2. cd auth-module
 
-# 2. Installer les dépendances
+### 2. Installer les dépendances
 yarn install
 
-# 3. Configurer vos variables d'environnement
+### 3. Configurer vos variables d'environnement
 1. JWT_SECRET=votre_secret_très_long_et_aléatoire
 2. MONGODB_URI=mongodb://localhost:27017/auth_db
 3. NODE_ENV=development
 
-# 4. Démarrer le serveur
+### 4. Démarrer le serveur
 yarn dev
 
-### Authentification publique
+## Authentification publique
 
 | Méthode | Route | Description | Rate Limit |
 |:-------:|------|-------------|:----------:|
@@ -67,7 +67,7 @@ yarn dev
 | **POST** | `/users/connexion` | Se connecter | 5/minute |
 | **POST** | `/users/refresh` | Rafraîchir l'access token | 10/minute |
 
-### Routes protégées (JWT requis)
+## Routes protégées (JWT requis)
 
 | Méthode | Route | Description |
 |:-------:|------|-------------|
@@ -77,15 +77,15 @@ yarn dev
 | **POST** | `/users/logout/all` | Déconnexion globale |
 | **DELETE** | `/users/sessions/:id` | Révoquer une session |
 
-## Structure de la base de données
-# Collection users
+# Structure de la base de données
+## Collection users
 
 { _id: ObjectId,
   email: String (unique),
   password: String (hashé),
   created: Date }
   
-# Collection sessions
+## Collection sessions
 
 { _id: ObjectId,
   userId: ObjectId (ref: users),
@@ -97,7 +97,7 @@ yarn dev
   ipAddress: String,
   revokedAt: Date (null si active) }
   
-# Collection usedtokens (pour détection de reuse)
+## Collection usedtokens (pour détection de reuse)
 
 { _id: ObjectId,
   tokenHash: String (unique),
@@ -105,7 +105,7 @@ yarn dev
   usedAt: Date,
   expiresAt: Date (TTL index) }
   
-### Limites connues
+# Limites connues
 Ce projet est volontairement concentré sur le cœur de l'authentification. Il ne gère pas :
 
 ❌ Confirmation d'email
