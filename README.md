@@ -2,16 +2,6 @@
 
 Un module d'authentification robuste et sécurisé pour applications SaaS, conçu pour protéger contre les attaques courantes tout en offrant une expérience utilisateur optimale.
 
-## 📋 Table des matières
-- [Architecture](#architecture)
-- [Menaces & Mitigations](#menaces--mitigations)
-- [Choix Techniques](#choix-techniques)
-- [Installation](#installation)
-- [Utilisation](#utilisation)
-- [Routes API](#routes-api)
-- [Structure de la base de données](#structure-de-la-base-de-données)
-- [Limites connues](#limites-connues)
-
 ## 🏗️ Architecture
 
 ![Flux d'authentification](./docs/auth-flow.png)
